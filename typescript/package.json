@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint src",
     "build": "rm -rf ./build && tsc",
-    "start": "npm run build && node build/src/index.js",
+    "start": "echo 'Execute an individual test with: npx jest src/name-of-the-kata.ts'",
     "dev": "nodemon",
     "test:watch": "jest --watch",
     "test": "jest"

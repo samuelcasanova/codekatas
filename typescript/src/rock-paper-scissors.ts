@@ -1,3 +1,4 @@
+// https://www.codewars.com/kata/5672a98bdbdd995fad00000f
 export function rps(p1: string, p2: string): string{
   if (p1 === p2) {
     return "Draw!"
