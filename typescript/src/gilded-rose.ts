@@ -13,10 +13,13 @@ export class Item {
 
   export class UpdatableItemFactory {
     static get(name: string, sellIn: number, quality: number): UpdatableItem {
-      if (name === 'Aged Brie') {
-        return new AgedBrie(name, sellIn, quality);
+      if (name === 'Aged Brie' || name === 'Sulfuras, Hand of Ragnaros') {
+        return new AgingItem(name, sellIn, quality);
       }
-      return new AgedBrie(name, sellIn, quality);
+      if (name === 'Backstage passes to a TAFKAL80ETC concert') {
+        return new BackstagePass(name, sellIn, quality);
+      }
+      return new AgingItem(name, sellIn, quality);
     }
   }
   
@@ -32,16 +35,37 @@ export class Item {
         this.quality = this.quality + qualitySteps * QUALITY_STEP;
       }
     }  
+
+    dropQuality() {
+      this.quality = NO_QUALITY;
+    }  
   }
 
-  export class AgedBrie extends UpdatableItem {
+  export class AgingItem extends UpdatableItem {
     override update() {
       this.decreaseSellin();
 
-      const qualitySteps = this.sellIn < MIN_SELLIN ? 2 : 1;
+      const isOutdated = this.sellIn < MIN_SELLIN;
+      const qualitySteps = isOutdated ? 2 : 1;
       this.increaseQuality(qualitySteps);
     }
   }
+
+export class BackstagePass extends UpdatableItem {
+  override update() {
+    this.increaseQuality();
+    if (this.sellIn < BACKSTAGE_PASS_UPPER_THRESHOLD_LIMIT) {
+      this.increaseQuality();
+    }
+    if (this.sellIn < BACKSTAGE_PASS_MID_THRESHOLD_LIMIT) {
+      this.increaseQuality();
+    }
+    this.decreaseSellin();
+    if (this.sellIn < MIN_SELLIN) {
+        this.dropQuality();
+    }
+  }
+}
 
   const QUALITY_STEP = 1;
   const NO_QUALITY = 0;
@@ -61,11 +85,11 @@ export class Item {
   
     updateQuality() {
       for(const item of this.items) {
-        if (isAgedBrie(item)) {
+        if (isAgedBrie(item) || isSulfuras(item) || isBackstagePass(item)) {
           item.update();
           break;
         }
-        if (!isAgedBrie(item) && !isBackstagePass(item) && !isSulfuras(item)) {
+        if (!isBackstagePass(item)) {
             decreaseQuality(item);
         } else {
           increaseQuality(item);
@@ -78,22 +102,12 @@ export class Item {
             }
           }
         }
-        if (!isSulfuras(item)) {
-          decreaseSellin(item);
-        }
+        decreaseSellin(item);
         if (item.sellIn < MIN_SELLIN) {
           if (!isBackstagePass(item)) {
-            if (isAgedBrie(item) || isSulfuras(item)) {
-              increaseQuality(item);
-            } else {
-              decreaseQuality(item);
-            }
+            decreaseQuality(item);
           } else {
-            if (isAgedBrie(item)) {
-              increaseQuality(item);
-            } else {
-              dropQuality(item);
-            }
+            dropQuality(item);
           }
         }
       }
