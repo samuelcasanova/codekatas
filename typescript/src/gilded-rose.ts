@@ -16,6 +16,7 @@ export class UpdatableItemFactory {
     const AGED_BRIE_NAME = 'Aged Brie';
     const SULFURAS_NAME = 'Sulfuras, Hand of Ragnaros';
     const BACKSTAGE_PASSES_NAME = 'Backstage passes to a TAFKAL80ETC concert';
+    const CONJURED_NAME = 'Conjured';
 
     if (name === AGED_BRIE_NAME || name === SULFURAS_NAME) {
       return new AgingItem(name, sellIn, quality);
@@ -23,12 +24,15 @@ export class UpdatableItemFactory {
     if (name === BACKSTAGE_PASSES_NAME) {
       return new BackstagePass(name, sellIn, quality);
     }
+    if (name === CONJURED_NAME) {
+      return new ConjuredItem(name, sellIn, quality);
+    }
     return new RegularItem(name, sellIn, quality);
   }
 }
 
 const QUALITY_STEP = 1;
-const DEFAULT_QUALITY_STEP_AMOUNT = 1;
+const DEFAULT_QUALITY_STEP_FACTOR = 1;
 const NO_QUALITY = 0;
 const MIN_QUALITY = 0;
 const MAX_QUALITY = 50;
@@ -41,9 +45,9 @@ export abstract class UpdatableItem extends Item {
     this.sellIn = this.sellIn - SELLIN_STEP;
   }  
 
-  protected increaseQuality(qualityStepAmount = DEFAULT_QUALITY_STEP_AMOUNT) {
+  protected increaseQuality(qualityStepFactor = DEFAULT_QUALITY_STEP_FACTOR) {
     if (this.quality < MAX_QUALITY) {
-      this.quality = this.quality + qualityStepAmount * QUALITY_STEP;
+      this.quality = this.quality + qualityStepFactor * QUALITY_STEP;
     }
   }  
 
@@ -55,9 +59,9 @@ export abstract class UpdatableItem extends Item {
     return this.sellIn < MIN_SELLIN;
   }
 
-  protected decreaseQuality() {
+  protected decreaseQuality(factor = DEFAULT_QUALITY_STEP_FACTOR) {
     if (this.quality > MIN_QUALITY) {
-      this.quality = this.quality - DEFAULT_QUALITY_STEP_AMOUNT * QUALITY_STEP;
+      this.quality = this.quality - factor * QUALITY_STEP;
     }
   }  
 }
@@ -68,8 +72,8 @@ export class AgingItem extends UpdatableItem {
   override update() {
     this.decreaseSellin();
 
-    const qualityStepAmount = this.isOutdated() ? AGING_OUTDATED_FACTOR : AGING_IN_SELLIN_FACTOR;
-    this.increaseQuality(qualityStepAmount * QUALITY_STEP);
+    const qualityStepFactor = this.isOutdated() ? AGING_OUTDATED_FACTOR : AGING_IN_SELLIN_FACTOR;
+    this.increaseQuality(qualityStepFactor * QUALITY_STEP);
   }
 }
 
@@ -81,6 +85,14 @@ export class RegularItem extends UpdatableItem {
     if (this.sellIn < MIN_SELLIN) {
       this.decreaseQuality();
     }      
+  }
+}
+
+const CONJURED_QUALITY_DEGRADING_FACTOR = 2
+export class ConjuredItem extends UpdatableItem {
+  override update() {
+    this.decreaseSellin();
+    this.decreaseQuality(CONJURED_QUALITY_DEGRADING_FACTOR);
   }
 }
 

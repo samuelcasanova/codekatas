@@ -62,5 +62,10 @@ describe('Gilded Rose', () => {
       const items = gildedRose.updateQuality();
       expect(items[0].quality).toBe(13);
     });
+    it('should decrease quality of "Conjured" item twice as fast as the rest', async () => {
+      const gildedRose = new GildedRose([UpdatableItemFactory.get('Conjured', 5, 5)]);
+      const items = gildedRose.updateQuality();
+      expect(items[0].quality).toBe(3);
+    });
   });
 });
