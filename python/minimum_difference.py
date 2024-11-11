@@ -12,24 +12,30 @@ class CharDifference:
         self.last_position = last_position
         self.min_difference = min_difference
 
-def min_repeating_character_difference(text):
-    dictionary = dict()
-    best_result = Result(None, math.inf)
-    for i, char in enumerate(text):
-        if char in dictionary:
-            previous_char_min_difference = dictionary[char].min_difference
-            current_char_difference = i - dictionary[char].last_position
-            new_min_difference = min(current_char_difference, previous_char_min_difference)
-            dictionary[char] = CharDifference(i, new_min_difference)
-            if new_min_difference < best_result.difference:
-                best_result = Result(char, new_min_difference)
-        else:
-            dictionary[char] = CharDifference(i, math.inf)
+class MinCharDifferenceCalculator:
+    formatted_result = None
+    def __init__(self, text):
+        dictionary = dict()
+        best_result_so_far = Result(None, math.inf)
+        for i, char in enumerate(text):
+            if char in dictionary:
+                previous_char_min_difference = dictionary[char].min_difference
+                current_char_difference = i - dictionary[char].last_position
+                new_min_difference = min(current_char_difference, previous_char_min_difference)
+                dictionary[char] = CharDifference(i, new_min_difference)
+                if new_min_difference < best_result_so_far.difference:
+                    best_result_so_far = Result(char, new_min_difference)
+            else:
+                dictionary[char] = CharDifference(i, math.inf)
 
-    if (best_result.repeating_char == None):
-        return None
-    else:
-        return (best_result.difference, best_result.repeating_char)
+        if (best_result_so_far.repeating_char != None):
+            self.formatted_result = (best_result_so_far.difference, best_result_so_far.repeating_char)
+     
+    def get_formatted_result(self):
+        return self.formatted_result
+
+def min_repeating_character_difference(text):
+    return MinCharDifferenceCalculator(text).get_formatted_result()
 
 class TestMinimumDifference(unittest.TestCase):
     def test_case_1(self):
@@ -55,6 +61,9 @@ class TestMinimumDifference(unittest.TestCase):
 
     def test_case_8(self):
         self.assertEqual(min_repeating_character_difference('abacc'), (1, 'c'))
+
+    def test_case_9(self):
+        self.assertEqual(min_repeating_character_difference('abcdaeafaa'), (1, 'a'))
 
 if __name__ == '__main__':
     unittest.main()
